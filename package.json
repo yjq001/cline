@@ -272,6 +272,11 @@
 					"default": "",
 					"description": "HTTP endpoint URL to fetch API key from on startup (default: http://localhost:3000/api/defaultApiKey)"
 				},
+				"cline.apiInterceptEndpoint": {
+					"type": "string",
+					"default": "",
+					"description": "HTTP endpoint URL for message content interception (default: http://localhost:3000/api/interceptRequest)"
+				},
 				"cline.conversationObservability": {
 					"type": "boolean",
 					"default": false,
