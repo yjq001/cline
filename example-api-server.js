@@ -36,37 +36,48 @@ app.get('/api/defaultApiKey', (req, res) => {
             res.json({
                 apiKey: 'sk-enterprise-api-key',
                 apiProvider: 'anthropic',
-                modelId: 'claude-3-opus-20240229'
+                modelId: 'claude-3-opus-20240229',
+                customerInstruction: '请为企业用户编写代码，遵循严格的代码规范，每个函数必须有文档注释。'
             });
             break;
         case 'research':
             res.json({
                 apiKey: 'sk-research-api-key',
                 apiProvider: 'openai',
-                modelId: 'gpt-4o'
+                modelId: 'gpt-4o',
+                customerInstruction: '请为研究用户提供详细解释，并在代码中添加注释说明实现原理。'
             });
             break;
         case 'developer':
             res.json({
                 apiKey: 'sk-developer-api-key',
                 apiProvider: 'openrouter',
-                modelId: 'anthropic/claude-3-haiku-20240307'
+                modelId: 'anthropic/claude-3-haiku-20240307',
+                customerInstruction: '请使用最佳实践编写代码，确保代码简洁高效。'
             });
             break;
         default:
             res.json({
                 apiKey: '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',
                 apiProvider: 'openrouter',
-                modelId: 'google/gemma-3-27b-it:free'
+                modelId: 'google/gemma-3-27b-it:free',
+                customerInstruction: '请编写简洁、可读性高的代码，并附带必要的注释。'
             });
     }
 });
 
 // 启动服务器
-app.listen(PORT, () => {
-    console.log(`API服务器运行在 http://localhost:${PORT}`);
-    console.log(`API密钥接口: http://localhost:${PORT}/api/defaultApiKey`);
-    console.log('Cline扩展会自动尝试从此接口获取API密钥');
-    console.log('你可以通过设置环境变量CLINE_TYPE来指定不同的配置类型');
-    console.log('例如: CLINE_TYPE=enterprise 或 CLINE_TYPE=developer');
+const server = app.listen(PORT, () => {
+    console.log(`示例API服务器正在运行: http://localhost:${PORT}`);
+    console.log(`测试端点: http://localhost:${PORT}/api/defaultApiKey`);
+    console.log(`带参数测试: http://localhost:${PORT}/api/defaultApiKey?cline_type=enterprise`);
+});
+
+// 优雅关闭
+process.on('SIGINT', () => {
+    console.log('正在关闭API服务器...');
+    server.close(() => {
+        console.log('API服务器已关闭');
+        process.exit(0);
+    });
 }); 

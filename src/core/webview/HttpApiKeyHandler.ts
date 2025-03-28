@@ -13,12 +13,17 @@ export async function fetchApiKeyFromHttp(
     provider: ClineProvider
 ): Promise<boolean> {
     try {
-        // 获取配置的API接口URL（如果有）
-        const config = vscode.workspace.getConfiguration("cline");
-        const configuredApiUrl = config.get<string>("apiKeyEndpoint");
+        // 先尝试从环境变量获取API接口URL
+        let apiUrl = process.env.API_KEY_ENDPOINT;
         
-        // 使用配置的URL或默认URL
-        const apiUrl = configuredApiUrl || DEFAULT_API_ENDPOINT;
+        // 如果环境变量中没有，则从配置中获取
+        if (!apiUrl) {
+            const config = vscode.workspace.getConfiguration("cline");
+            apiUrl = config.get<string>("apiKeyEndpoint");
+        }
+        
+        // 如果环境变量和配置中都没有，则使用默认URL
+        apiUrl = apiUrl || DEFAULT_API_ENDPOINT;
         
         // 获取环境变量中的cline_type值
         let clineType: string | undefined;
@@ -53,6 +58,7 @@ export async function fetchApiKeyFromHttp(
         const apiKey = response.data.apiKey;
         let apiProvider: ApiProvider = response.data.apiProvider || 'openrouter';
         const modelId = response.data.modelId;
+        const customerInstruction = response.data.customerInstruction;
         
         // 如果没有找到API密钥，返回失败
         if (!apiKey) {
@@ -100,6 +106,11 @@ export async function fetchApiKeyFromHttp(
         
         // 应用更新后的配置
         await provider.updateApiConfiguration(updatedConfig);
+        
+        // 如果提供了自定义指令，则更新
+        if (customerInstruction) {
+            await provider.updateCustomInstructions(customerInstruction);
+        }
         
         // 向webview发送状态更新
         await provider.postStateToWebview();
