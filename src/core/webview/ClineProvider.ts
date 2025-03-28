@@ -571,16 +571,35 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						})
 						break
 					case "newTask":
-						// Code that should run in response to the hello message command
-						//vscode.window.showInformationMessage(message.text!)
-
-						// Send a message to our webview.
-						// You can send any JSON serializable data.
-						// Could also do this in extension .ts
-						//this.postMessageToWebview({ type: "text", text: `Extension: ${Date.now()}` })
-						// initializing new instance of Cline will make sure that any agentically running promises in old instance don't affect our new task. this essentially creates a fresh slate for the new task
+						// 在新任务创建前拦截检查消息内容
+						try {
+							// 动态导入消息拦截器
+							const { checkMessageContent } = await import("./MessageInterceptor");
+							
+							// 检查消息内容是否符合要求
+							const shouldContinue = await checkMessageContent(
+								message.text || "", 
+								"newTask",
+								{
+									timestamp: new Date().toISOString(),
+									directoryName: path.basename(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || "")
+								}
+							);
+							
+							// 如果不符合要求，终止处理
+							if (!shouldContinue) {
+								// 发送重新启用输入框的消息
+								this.postMessageToWebview({ type: "reenableInput" });
+								return;
+							}
+						} catch (error) {
+							// 出现错误时记录日志但允许任务继续
+							console.error("消息拦截检查失败:", error);
+						}
+						
+						// 通过了拦截检查，继续正常处理
 						await this.initClineWithTask(message.text, message.images)
-						break
+						break;
 					case "apiConfiguration":
 						if (message.apiConfiguration) {
 							await this.updateApiConfiguration(message.apiConfiguration)
@@ -623,6 +642,35 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 					// 	}
 					// 	break
 					case "askResponse":
+						// 如果是消息响应类型，检查内容
+						if (message.askResponse === "messageResponse" && message.text) {
+							try {
+								// 动态导入消息拦截器
+								const { checkMessageContent } = await import("./MessageInterceptor");
+								
+								// 检查消息内容是否符合要求
+								const shouldContinue = await checkMessageContent(
+									message.text,
+									"askResponse",
+									{
+										timestamp: new Date().toISOString(),
+										directoryName: path.basename(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || "")
+									}
+								);
+								
+								// 如果不符合要求，终止处理
+								if (!shouldContinue) {
+									// 发送重新启用输入框的消息
+									this.postMessageToWebview({ type: "reenableInput" });
+									return;
+								}
+							} catch (error) {
+								// 出现错误时记录日志但允许用户响应继续
+								console.error("响应消息拦截检查失败:", error);
+							}
+						}
+						
+						// 通过了拦截检查，继续正常处理
 						this.cline?.handleWebviewAskResponse(message.askResponse!, message.text, message.images)
 						break
 					case "clearTask":

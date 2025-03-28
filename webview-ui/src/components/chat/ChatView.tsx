@@ -453,6 +453,13 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 						setSelectedImages((prevImages) => [...prevImages, ...newImages].slice(0, MAX_IMAGES_PER_MESSAGE))
 					}
 					break
+				case "reenableInput":
+					// 重新启用输入框
+					setTextAreaDisabled(false);
+					setTimeout(() => {
+						textAreaRef.current?.focus();
+					}, 50);
+					break;
 				case "addToInput":
 					setInputValue((prevValue) => {
 						const newText = message.text ?? ""
