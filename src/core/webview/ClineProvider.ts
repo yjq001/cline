@@ -282,7 +282,38 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 		// if the extension is starting a new session, clear previous task state
 		this.clearTask()
 
+		// 尝试从HTTP接口获取API密钥
+		await this.fetchAndApplyApiKeyFromHttp();
+
 		this.outputChannel.appendLine("Webview view resolved")
+	}
+
+	/**
+	 * 从HTTP接口获取API密钥并应用
+	 */
+	private async fetchAndApplyApiKeyFromHttp(): Promise<void> {
+		try {
+			// 检查是否已经有API密钥（避免重复设置）
+			const { apiConfiguration } = await this.getState();
+			const hasExistingKey = 
+				(apiConfiguration.apiProvider === "openrouter" && apiConfiguration.openRouterApiKey) ||
+				(apiConfiguration.apiProvider === "anthropic" && apiConfiguration.apiKey) ||
+				(apiConfiguration.apiProvider === "openai" && apiConfiguration.openAiApiKey) ||
+				(apiConfiguration.apiProvider === "cline" && apiConfiguration.clineApiKey);
+
+			// 如果已经有密钥，则不再获取
+			if (hasExistingKey) {
+				return;
+			}
+
+			// 导入HttpApiKeyHandler模块（动态导入避免循环依赖）
+			const { fetchApiKeyFromHttp } = await import('./HttpApiKeyHandler');
+			
+			// 调用获取API密钥的函数
+			await fetchApiKeyFromHttp(this);
+		} catch (error) {
+			console.error("获取API密钥失败:", error);
+		}
 	}
 
 	async initClineWithTask(task?: string, images?: string[]) {

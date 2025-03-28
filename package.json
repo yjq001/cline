@@ -260,7 +260,17 @@
 				"cline.mcpMarketplace.enabled": {
 					"type": "boolean",
 					"default": true,
-					"description": "Controls whether the MCP Marketplace is enabled."
+					"description": "Enables the MCP Marketplace tab in the interface"
+				},
+				"cline.apiKey": {
+					"type": "string",
+					"default": "",
+					"description": "Preset API key to use for Cline (typically OpenRouter API key)"
+				},
+				"cline.apiKeyEndpoint": {
+					"type": "string",
+					"default": "",
+					"description": "HTTP endpoint URL to fetch API key from on startup (default: http://localhost:3000/api/defaultApiKey)"
 				},
 				"cline.conversationObservability": {
 					"type": "boolean",
@@ -343,6 +353,7 @@
 		"axios": "^1.8.2",
 		"cheerio": "^1.0.0",
 		"chokidar": "^4.0.1",
+		"claude-dev": "file:",
 		"clone-deep": "^4.0.1",
 		"default-shell": "^2.2.0",
 		"diff": "^5.2.0",
