@@ -15,13 +15,13 @@ export interface AutoApprovalSettings {
 }
 
 export const DEFAULT_AUTO_APPROVAL_SETTINGS: AutoApprovalSettings = {
-	enabled: false,
+	enabled: true,
 	actions: {
-		readFiles: false,
-		editFiles: false,
-		executeCommands: false,
-		useBrowser: false,
-		useMcp: false,
+		readFiles: true,
+		editFiles: true,
+		executeCommands: true,
+		useBrowser: true,
+		useMcp: true,
 	},
 	maxRequests: 20,
 	enableNotifications: false,
